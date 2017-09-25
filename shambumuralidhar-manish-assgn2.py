@@ -1,23 +1,29 @@
 import re
 import operator
 import os.path
-import pandas as pd
-import numpy as np
+import math
 from sklearn.model_selection import train_test_split
 
 most_frequent_tags = dict()
 word_pos_tags = dict()
 word_counts = dict()
+pos_counts = dict()
 word_counts_sorted = dict()
-InputFileName = "berp-POS-training-small.txt"
+InputFileName = "berp-POS-training.txt"
 testFileName = "berp-POS-test.txt"
 testFileName = "berp-POS-test.txt"
 dir_path = ""
 trainingFile = "training.txt"
 testExpectedFile = "test_expected.txt"
 testFile = "test.txt"
-
 prefix_pattern = "(^[0-9])"
+observationSpace = set()
+stateSpace = set()
+wordOrderList = list()
+posOrderList = list()
+transitional_p = dict()
+emmision_p = dict()
+stateBigramTransitionCounts = dict()
 
 def arrangeSentencesInEachLine(trainingInputContent):
     if prefix_pattern:
@@ -48,6 +54,14 @@ Create a new dict with key as the word name
 Its value is the highest occurring matching POS in the training data for that word.
 '''
 def buildBaseLine(fileContent):
+    global stateSpace
+    global observationSpace
+    global word_counts
+    global pos_counts
+    global word_counts_sorted
+
+    wordOrderList.append('.')
+    posOrderList.append('.')
 
     for line in fileContent:
             column = line.split()
@@ -55,6 +69,8 @@ def buildBaseLine(fileContent):
                 sl = column[0]
                 word = column[1]
                 pos = column[2]
+                wordOrderList.append(word)
+                posOrderList.append(pos)
                 if word in word_pos_tags:
                     if pos in word_pos_tags[word]:
                         (word_pos_tags[word])[pos] +=  1
@@ -65,17 +81,28 @@ def buildBaseLine(fileContent):
                     posCounts[pos] = 1
                     word_pos_tags[word] = posCounts
 
-                #extract total occurences of a word in the given data
-                global word_counts
+                #extract total occurences of a words and POS in the given data
                 if word in word_counts:
                     word_counts[word] += 1
                 else:
                     word_counts[word] = 1
+                if pos in pos_counts:
+                    pos_counts[pos] += 1
+                else:
+                    pos_counts[pos] = 1
 
     #assign words with the highest occurring POS
     for key in word_pos_tags:
         most_frequent_tags[key] = max(word_pos_tags[key], key=word_pos_tags[key].get)
         word_counts_sorted = sorted(word_counts.items(), key=operator.itemgetter(1))
+
+
+
+    observationSpace = set(word_pos_tags.keys())
+    stateSpace = set(pos_counts.keys())
+
+    #print("Total observation Space "+len(observationSpace).__str__())
+    #print("Total state space "+len(stateSpace).__str__())
 
 
 def splitFiles(trainingInputContentToSplit):
@@ -111,6 +138,52 @@ def splitFiles(trainingInputContentToSplit):
                         testfileObj.write(column[0] + "\t" + column[1] + '\n')
                 testfileObj.write('\n')
 
+def buildBigrams(input_list):
+    return zip(input_list, input_list[1:])
+
+def generateBigramTransitionCounts(bigramsTuple, space):
+    global stateBigramTransitionCounts
+    for i in space:
+        stateBigramTransitionCounts[i] = dict()
+        for j in space:
+            (stateBigramTransitionCounts[i])[j] = 0
+
+    for each in bigramsTuple:
+         if each[0] in stateBigramTransitionCounts:
+             if each[1] in  stateBigramTransitionCounts[each[0]]:
+                 (stateBigramTransitionCounts[each[0]])[each[1]] += 1
+             else:
+                 (stateBigramTransitionCounts[each[0]])[each[1]] = 1
+         else:
+             (stateBigramTransitionCounts[each[0]])[each[1]] = 1
+    print(stateBigramTransitionCounts)
+
+def generateTransitionProbablilities(transitionCounts, space):
+    global transitional_p
+    for i in space:
+        transitional_p[i] = dict()
+        for j in space:
+            probCounts = dict()
+            probCounts[j] = 0
+            (transitional_p[i])[j] = 0
+
+    for state in transitionCounts:
+        #print(state)
+        totalTransitions = 0
+        for transitions in transitionCounts[state]:
+            totalTransitions += transitionCounts[state][transitions]
+
+        for transitions in transitionCounts[state]:
+            (transitional_p[state])[transitions] = (transitionCounts[state][transitions])/totalTransitions
+    #print(transitional_p)
+
+def checkProbabilities(transitional_p):
+    flag = 1
+    for each in transitional_p:
+        if sum(transitional_p[each].values()) < 0.999 and sum(transitional_p[each].values()) > 1.001:
+            return 0
+    return flag
+
 
 if __name__ == "__main__":
     trainingInputContent = open(InputFileName, 'r').readlines()
@@ -120,5 +193,20 @@ if __name__ == "__main__":
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
     # Split files into training and test
-    splitFiles(sentenceArray)
-	#buildBaseLine(trainingInputContent)
+    #splitFiles(sentenceArray)
+    trainingContent = open(trainingFile, 'r').readlines()
+    testContent = open(testFile, 'r').readlines()
+
+    buildBaseLine(trainingInputContent)
+
+    stateBigrams = buildBigrams(posOrderList)
+    generateBigramTransitionCounts(stateBigrams,stateSpace)
+
+    generateTransitionProbablilities(stateBigramTransitionCounts, stateSpace)
+    correct = checkProbabilities(transitional_p)
+
+
+
+
+
+
