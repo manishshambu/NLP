@@ -1,7 +1,6 @@
 import re
 import operator
 import os.path
-import math
 from sklearn.model_selection import train_test_split
 
 most_frequent_tags = dict()
@@ -104,7 +103,6 @@ def buildBaseLine(fileContent):
     #print("Total observation Space "+len(observationSpace).__str__())
     #print("Total state space "+len(stateSpace).__str__())
 
-
 def splitFiles(trainingInputContentToSplit):
     if not (os.path.isfile(testFile) and os.path.isfile(testExpectedFile) and os.path.isfile(trainingFile)):
         train, test = train_test_split(trainingInputContentToSplit, test_size=0.2)
@@ -163,8 +161,6 @@ def generateTransitionProbablilities(transitionCounts, space):
     for i in space:
         transitional_p[i] = dict()
         for j in space:
-            probCounts = dict()
-            probCounts[j] = 0
             (transitional_p[i])[j] = 0
 
     for state in transitionCounts:
@@ -183,6 +179,41 @@ def checkProbabilities(transitional_p):
         if sum(transitional_p[each].values()) < 0.999 and sum(transitional_p[each].values()) > 1.001:
             return 0
     return flag
+
+def generateEmmisionCounts(observationSpace, stateSpace):
+    emmisionBigramTransitionCounts = dict()
+    for i in observationSpace:
+        emmisionBigramTransitionCounts[i] = dict()
+        for j in stateSpace:
+            (emmisionBigramTransitionCounts[i])[j] = 0
+
+    emmisionList = zip(wordOrderList, posOrderList)
+    print(emmisionList)
+
+    for each in emmisionList:
+        if each[0] in emmisionBigramTransitionCounts:
+            if each[1] in emmisionBigramTransitionCounts[each[0]]:
+                (emmisionBigramTransitionCounts[each[0]])[each[1]] += 1
+            else:
+                (emmisionBigramTransitionCounts[each[0]])[each[1]] = 1
+        else:
+            (emmisionBigramTransitionCounts[each[0]])[each[1]] = 1
+    return emmisionBigramTransitionCounts
+
+def generateEmmisionProbablilities(emmissionCounts, observationSpace, stateSpace):
+    global emmision_p
+    for i in observationSpace:
+        emmision_p[i] = dict()
+        for j in stateSpace:
+            (emmision_p[i])[j] = 0
+
+    for word in emmissionCounts:
+        for pos in emmissionCounts[word]:
+            (emmissionCounts[word])[pos] = (emmissionCounts[word][pos]) / pos_counts[pos]
+
+    print(emmissionCounts)
+
+
 
 
 if __name__ == "__main__":
@@ -204,6 +235,10 @@ if __name__ == "__main__":
 
     generateTransitionProbablilities(stateBigramTransitionCounts, stateSpace)
     correct = checkProbabilities(transitional_p)
+
+    emmisionBigramTransitionCounts = generateEmmisionCounts(observationSpace, stateSpace)
+    generateEmmisionProbablilities(emmisionBigramTransitionCounts, observationSpace, stateSpace)
+    correct = checkProbabilities(emmision_p)
 
 
 
