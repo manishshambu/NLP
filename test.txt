@@ -1,0 +1,68 @@
+1	start
+2	over
+3	.
+
+1	a
+2	moderate
+3	distance
+4	away
+5	.
+
+1	i
+2	want
+3	to
+4	be
+5	far
+6	away
+7	from
+8	icsi
+9	.
+
+1	i
+2	want
+3	to
+4	have
+5	dinner
+6	.
+
+1	tell
+2	me
+3	about
+4	le
+5	bateau
+6	ivre
+7	.
+
+1	it
+2	can
+3	be
+4	really
+5	expensive
+6	.
+
+1	i
+2	want
+3	to
+4	eat
+5	breakfast
+6	at
+7	a
+8	really
+9	cheap
+10	place
+11	tomorrow
+12	.
+
+1	i
+2	want
+3	to
+4	eat
+5	breakfast
+6	at
+7	a
+8	really
+9	cheap
+10	place
+11	tomorrow
+12	.
+

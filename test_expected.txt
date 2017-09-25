@@ -1,0 +1,68 @@
+1	start	VB
+2	over	RP
+3	.	.
+
+1	a	DT
+2	moderate	JJ
+3	distance	NN
+4	away	RB
+5	.	.
+
+1	i	PRP
+2	want	VBP
+3	to	TO
+4	be	VB
+5	far	RB
+6	away	RB
+7	from	IN
+8	icsi	NN
+9	.	.
+
+1	i	PRP
+2	want	VBP
+3	to	TO
+4	have	VB
+5	dinner	NN
+6	.	.
+
+1	tell	VB
+2	me	PRP
+3	about	IN
+4	le	FW
+5	bateau	FW
+6	ivre	FW
+7	.	.
+
+1	it	PRP
+2	can	MD
+3	be	VB
+4	really	RB
+5	expensive	JJ
+6	.	.
+
+1	i	PRP
+2	want	VBP
+3	to	TO
+4	eat	VB
+5	breakfast	NN
+6	at	IN
+7	a	DT
+8	really	RB
+9	cheap	JJ
+10	place	NN
+11	tomorrow	NN
+12	.	.
+
+1	i	PRP
+2	want	VBP
+3	to	TO
+4	eat	VB
+5	breakfast	NN
+6	at	IN
+7	a	DT
+8	really	RB
+9	cheap	JJ
+10	place	NN
+11	tomorrow	NN
+12	.	.
+

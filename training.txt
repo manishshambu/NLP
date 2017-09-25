@@ -1,0 +1,233 @@
+1	i	PRP
+2	want	VBP
+3	to	TO
+4	eat	VB
+5	breakfast	NN
+6	at	IN
+7	a	DT
+8	really	RB
+9	cheap	JJ
+10	place	NN
+11	tomorrow	NN
+12	.	.
+
+1	tell	VB
+2	me	PRP
+3	about	IN
+4	le	FW
+5	bateau	FW
+6	ivre	FW
+7	.	.
+
+1	next	JJ
+2	thursday	NN
+3	.	.
+
+1	as	RB
+2	far	RB
+3	away	RB
+4	as	IN
+5	we	PRP
+6	can	MD
+7	get	VB
+8	.	.
+
+1	let	VB
+2	me	PRP
+3	see	VB
+4	the	DT
+5	list	NN
+6	again	RB
+7	.	.
+
+1	let	VB
+2	me	PRP
+3	see	VB
+4	the	DT
+5	list	NN
+6	again	RB
+7	.	.
+
+1	i	PRP
+2	'd	MD
+3	like	VB
+4	to	TO
+5	go	VB
+6	to	IN
+7	a	DT
+8	fancy	JJ
+9	restaurant	NN
+10	.	.
+
+1	tell	VB
+2	me	PRP
+3	about	IN
+4	le	FW
+5	bateau	FW
+6	ivre	FW
+7	.	.
+
+1	tell	VB
+2	me	PRP
+3	about	IN
+4	a	DT
+5	-	HYPH
+6	la	NN
+7	-	HYPH
+8	carte	NN
+9	.	.
+
+1	tell	VB
+2	me	PRP
+3	about	IN
+4	le	FW
+5	bateau	FW
+6	ivre	FW
+7	.	.
+
+1	dinner	NN
+2	.	.
+
+1	i	PRP
+2	want	VBP
+3	to	TO
+4	eat	VB
+5	breakfast	NN
+6	instead	RB
+7	.	.
+
+1	i	PRP
+2	want	VBP
+3	to	TO
+4	eat	VB
+5	american	JJ
+6	food	NN
+7	.	.
+
+1	start	VB
+2	over	RP
+3	.	.
+
+1	what	WDT
+2	kinds	NNS
+3	of	IN
+4	food	NN
+5	do	VBP
+6	you	PRP
+7	know	VB
+8	about	IN
+9	.	.
+
+1	i	PRP
+2	want	VBP
+3	the	DT
+4	restaurant	NN
+5	to	TO
+6	be	VB
+7	really	RB
+8	close	JJ
+9	to	IN
+10	icsi	NN
+11	.	.
+
+1	as	RB
+2	far	RB
+3	away	RB
+4	as	IN
+5	we	PRP
+6	can	MD
+7	get	VB
+8	.	.
+
+1	i	PRP
+2	want	VBP
+3	to	TO
+4	eat	VB
+5	breakfast	NN
+6	at	IN
+7	a	DT
+8	really	RB
+9	cheap	JJ
+10	place	NN
+11	tomorrow	NN
+12	.	.
+
+1	show	VB
+2	me	PRP
+3	the	DT
+4	list	NN
+5	again	RB
+6	.	.
+
+1	next	JJ
+2	thursday	NN
+3	.	.
+
+1	i	PRP
+2	'd	MD
+3	like	VB
+4	french	JJ
+5	food	NN
+6	.	.
+
+1	tell	VB
+2	me	PRP
+3	about	IN
+4	a	DT
+5	-	HYPH
+6	la	NN
+7	-	HYPH
+8	carte	NN
+9	.	.
+
+1	as	RB
+2	far	RB
+3	away	RB
+4	as	IN
+5	we	PRP
+6	can	MD
+7	get	VB
+8	.	.
+
+1	a	DT
+2	moderate	JJ
+3	distance	NN
+4	away	RB
+5	.	.
+
+1	tell	VB
+2	me	PRP
+3	about	IN
+4	le	FW
+5	bateau	FW
+6	ivre	FW
+7	.	.
+
+1	i	PRP
+2	want	VBP
+3	to	TO
+4	eat	VB
+5	french	JJ
+6	food	NN
+7	.	.
+
+1	tell	VB
+2	me	PRP
+3	about	IN
+4	a	DT
+5	-	HYPH
+6	la	NN
+7	-	HYPH
+8	carte	NN
+9	.	.
+
+1	tell	VB
+2	me	PRP
+3	about	IN
+4	a	DT
+5	-	HYPH
+6	la	NN
+7	-	HYPH
+8	carte	NN
+9	.	.
+
