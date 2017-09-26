@@ -7,13 +7,12 @@ most_frequent_tags = dict()
 word_pos_tags = dict()
 word_counts = dict()
 pos_counts = dict()
-InputFileName = "berp-POS-training-small.txt"
-testFileName = "berp-POS-test.txt"
-testFileName = "berp-POS-test.txt"
+InputFileName = "berp-POS-training.txt"
+testFileName = "assgn2-test-set.txt"
 dir_path = ""
-trainingFile = "training.txt"
+trainingFile = "berp-POS-training.txt"
 testExpectedFile = "test_expected.txt"
-testFile = "test.txt"
+testFile = "assgn2-test-set.txt"
 prefix_pattern = "(^[0-9])"
 observationSpace = set()
 wordOrderList = list()
@@ -22,6 +21,10 @@ transitional_p = dict()
 emmision_p = dict()
 stateBigramTransitionCounts = dict()
 start_p = dict()
+testObservation = list()
+bigramCounts = 0
+bigramTypes = set()
+testObservationUnmodified = list()
 
 def arrangeSentencesInEachLine(trainingInputContent):
     if prefix_pattern:
@@ -94,7 +97,8 @@ def buildBaseLine(fileContent):
 
     observationSpace = set(word_pos_tags.keys())
     stateSpace = set(pos_counts.keys())
-
+    #print(word_counts)
+    #print(pos_counts)
 
 def splitFiles(trainingInputContentToSplit):
     if not (os.path.isfile(testFile) and os.path.isfile(testExpectedFile) and os.path.isfile(trainingFile)):
@@ -139,15 +143,20 @@ def generateBigramTransitionCounts(bigramsTuple, space):
         for j in space:
             (stateBigramTransitionCounts[i])[j] = 0
 
+    global bigramTypes
+    print(bigramTypes)
     for each in bigramsTuple:
-         if each[0] in stateBigramTransitionCounts:
-             if each[1] in  stateBigramTransitionCounts[each[0]]:
+        #print(each)
+        #bigramCounts += 1
+        bigramTypes.add(each)
+        if each[0] in stateBigramTransitionCounts:
+             if each[1] in stateBigramTransitionCounts[each[0]]:
                  (stateBigramTransitionCounts[each[0]])[each[1]] += 1
              else:
                  (stateBigramTransitionCounts[each[0]])[each[1]] = 1
-         else:
-             (stateBigramTransitionCounts[each[0]])[each[1]] = 1
-    print(stateBigramTransitionCounts)
+        else:
+            (stateBigramTransitionCounts[each[0]])[each[1]] = 1
+    print(len(bigramTypes))
 
 def generateTransitionProbablilities(transitionCounts, space):
     global transitional_p
@@ -156,15 +165,12 @@ def generateTransitionProbablilities(transitionCounts, space):
         for j in space:
             (transitional_p[i])[j] = 0
 
-    for state in transitionCounts:
-        #print(state)
-        totalTransitions = 0
-        for transitions in transitionCounts[state]:
-            totalTransitions += transitionCounts[state][transitions]
-
-        for transitions in transitionCounts[state]:
-            (transitional_p[state])[transitions] = (transitionCounts[state][transitions])/totalTransitions
-    #print(transitional_p)
+    for state1 in space:
+        for state2 in space:
+            numerator = transitionCounts[state1][state2]
+            denominator = 0.75*len(bigramTypes) + pos_counts[state1]
+            transitional_p[state1][state2] = numerator/denominator
+    print(pos_counts)
 
 def checkProbabilities(transitional_p):
     flag = 1
@@ -178,47 +184,50 @@ def generateEmmisionCounts(observationSpace, stateSpace):
     for i in stateSpace:
         emmisionBigramTransitionCounts[i] = dict()
         for j in observationSpace:
-            (emmisionBigramTransitionCounts[i])[j] = 0
+            emmisionBigramTransitionCounts[i][j] = 0
 
     emmisionList = zip(posOrderList, wordOrderList)
 
     for each in emmisionList:
-        if each[0] in emmisionBigramTransitionCounts:
-            if each[1] in emmisionBigramTransitionCounts[each[0]]:
-                (emmisionBigramTransitionCounts[each[0]])[each[1]] += 1
-            else:
-                (emmisionBigramTransitionCounts[each[0]])[each[1]] = 1
+        state = each[0]
+        word = each[1]
+        if state in emmisionBigramTransitionCounts:
+             if word in emmisionBigramTransitionCounts[state]:
+                 (emmisionBigramTransitionCounts[state])[word] += 1
+             else:
+                 (emmisionBigramTransitionCounts[state])[word] = 1
         else:
-            (emmisionBigramTransitionCounts[each[0]])[each[1]] = 1
+             (emmisionBigramTransitionCounts[state])[word]= 1
     return emmisionBigramTransitionCounts
 
 def generateEmmisionProbablilities(emmissionCounts, observationSpace, stateSpace):
     global emmision_p
 
-    for i in stateSpace:
-        emmision_p[i] = dict()
-        for j in observationSpace:
-            (emmision_p[i])[j] = 0
+    for state in stateSpace:
+        emmision_p[state] = dict()
+        for word in observationSpace:
+            (emmision_p[state])[word] = 0
 
-    for state in emmissionCounts:
-        for word in emmissionCounts[state]:
-            (emmision_p[state])[word] = (emmissionCounts[state][word]) / word_counts[word]
+    for state in stateSpace:
+        for word in observationSpace:
+            (emmision_p[state])[word] = (emmissionCounts[state][word]) / pos_counts[state]
+    #print(emmision_p)
 
 def generateStartProbabilities():
     bigramtuples = zip(wordOrderList, posOrderList[1:])
     start_count = dict()
-    for i in stateSpace:
-        start_count[i] = 0
+    for state in stateSpace:
+        start_count[state] = 0
 
-    for i in bigramtuples:
-        if i[0] == '.':
-            start_count[i[1]] += 1
+    for bigramTuple in bigramtuples:
+        if bigramTuple[0] == '.':
+            start_count[bigramTuple[1]] += 1
 
     totalStarts = sum(start_count.values())
 
-    for pos in start_count:
-        prob = start_count[pos]/totalStarts
-        start_p[pos] = prob
+    for state in start_count:
+        prob = start_count[state]/totalStarts
+        start_p[state] = prob
 
 def viterbi(obs, states, start_p, trans_p, emit_p):
     V = [{}]
@@ -262,12 +271,14 @@ def dptable(V):
         yield "%.7s: " % state + " ".join("%.7s" % ("%f" % v[state]["prob"]) for v in V)
 
 def buildTestObservationInOrder(content):
-    testObservation = list()
+    global testObservation
+    global testObservationUnmodified
     for line in content:
         column = line.split()
         if column:
             testObservation.append(column[1])
-    return testObservation
+            testObservationUnmodified.append(column[1])
+    print(testObservation)
 
 def writeOutputFile(testFile, outputFile, opt):
     testFileObj = open(testFile, 'r')
@@ -275,9 +286,9 @@ def writeOutputFile(testFile, outputFile, opt):
     for line in testFileObj.readlines():
         column = line.split()
         if column:
-            sl = column[0]
-            word = column[1]
-            pos = opt.pop(0)
+            sl = column[0].strip()
+            word = column[1].strip()
+            pos = opt.pop(0).strip()
             writeline = sl+'\t'+word+'\t'+pos+'\n'
             outputFileObj.write(writeline)
         else:
@@ -287,12 +298,61 @@ def writeOutputFile(testFile, outputFile, opt):
 def addKSmoothing(discount):
     for state1 in stateBigramTransitionCounts:
         for state2 in stateBigramTransitionCounts[state1]:
-            stateBigramTransitionCounts[state1][state2] += discount
-    #print(stateBigramTransitionCounts)
+            stateBigramTransitionCounts[state1][state2] += 0.75
 
-def handleUnknowns(trainingContent, testContent):
-    for column in testFile:
-        pass
+def handleUnknowns(testContent, trainingContent):
+    global testObservation
+    global word_counts
+    global observationSpace
+
+    unkCount = 0
+    alteredWordCounts = dict()
+    for word in word_counts:
+        if word_counts[word] == 1:
+            unkCount += 1
+            observationSpace.remove(word)
+            for n,i in enumerate(wordOrderList):
+                if i == word:
+                    wordOrderList[n] = '<UNK>'
+        else:
+            alteredWordCounts[word] = word_counts[word]
+
+    word_counts = alteredWordCounts
+    word_counts['<UNK>'] = unkCount
+    observationSpace.add('<UNK>')
+    print(word_counts)
+
+    for line in testContent:
+        column = line.split()
+        if column:
+            word = column[1]
+            if word not in word_counts:
+                for n, i in enumerate(testObservation):
+                    if i == word:
+                        testObservation[n] = '<UNK>'
+
+def generateSequenceFromViterbi(testObservation, testObservationUnmodified, stateSpace, start_p, transition_p, emmission_p, outputFileName):
+    tempSentenceModifiedList = []
+    tempSentenceUnmodifiedList = []
+    outfh = open(outputFileName, "w")
+    for i in range(0,len(testObservation)):
+        if testObservation[i]!= '.':
+            tempSentenceModifiedList.append(testObservation[i])
+            tempSentenceUnmodifiedList.append(testObservationUnmodified[i])
+        else:
+            #print("+++++++++++++++")
+            #print(tempSentenceModifiedList)
+            opt = viterbi(tempSentenceModifiedList, list(stateSpace), start_p, transitional_p, emmision_p)
+            outputFileEntry = ""
+            for j in range(0,len(tempSentenceModifiedList)):
+                outputFileEntry += str(j+1) + "\t" + tempSentenceUnmodifiedList[j] + "\t" + opt[j] + "\n"
+            outputFileEntry += str(len(tempSentenceUnmodifiedList)+1) + "\t" + "." + "\t" + "." + "\n\n"
+            #print(outputFileEntry)
+            outfh.write(outputFileEntry)
+            tempSentenceUnmodifiedList = []
+            tempSentenceModifiedList = []
+
+
 
 
 
@@ -309,6 +369,8 @@ if __name__ == "__main__":
 
     buildBaseLine(trainingContent)
 
+    buildTestObservationInOrder(testContent)
+
     handleUnknowns(testContent, trainingContent)
 
     stateBigrams = buildBigrams(posOrderList)
@@ -319,19 +381,30 @@ if __name__ == "__main__":
 
     generateTransitionProbablilities(stateBigramTransitionCounts, stateSpace)
     correct = checkProbabilities(transitional_p)
+    #print(correct)
+
+    ## VERIFIED TILL HERE
 
     emmisionBigramTransitionCounts = generateEmmisionCounts(observationSpace, stateSpace)
     generateEmmisionProbablilities(emmisionBigramTransitionCounts, observationSpace, stateSpace)
     correct = checkProbabilities(emmision_p)
+    #print(correct)
 
     generateStartProbabilities()
 
-    testObservationInOrder = buildTestObservationInOrder(testContent)
-
-    opt = viterbi(testObservationInOrder, list(stateSpace), start_p, transitional_p, emmision_p)
+    print('---------------------')
+    print(transitional_p)
+    print('---------------------')
+    print(emmision_p)
+    print('---------------------')
+    print(start_p)
 
     outputFileName = 'shambumuralidhar-manish-assgn2-test-output.txt'
-    writeOutputFile(testFile, outputFileName, opt)
+    generateSequenceFromViterbi(testObservation, testObservationUnmodified, list(stateSpace), start_p, transitional_p, emmision_p, outputFileName)
+    #opt = viterbi(testObservation, list(stateSpace), start_p, transitional_p, emmision_p)
+
+
+    #writeOutputFile(testFile, outputFileName, opt)
 
 
 
