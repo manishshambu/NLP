@@ -7,8 +7,7 @@ most_frequent_tags = dict()
 word_pos_tags = dict()
 word_counts = dict()
 pos_counts = dict()
-word_counts_sorted = dict()
-InputFileName = "berp-POS-training.txt"
+InputFileName = "berp-POS-training-small.txt"
 testFileName = "berp-POS-test.txt"
 testFileName = "berp-POS-test.txt"
 dir_path = ""
@@ -17,7 +16,6 @@ testExpectedFile = "test_expected.txt"
 testFile = "test.txt"
 prefix_pattern = "(^[0-9])"
 observationSpace = set()
-stateSpace = set()
 wordOrderList = list()
 posOrderList = list()
 transitional_p = dict()
@@ -58,7 +56,6 @@ def buildBaseLine(fileContent):
     global observationSpace
     global word_counts
     global pos_counts
-    global word_counts_sorted
 
     wordOrderList.append('.')
     posOrderList.append('.')
@@ -94,19 +91,14 @@ def buildBaseLine(fileContent):
     #assign words with the highest occurring POS
     for key in word_pos_tags:
         most_frequent_tags[key] = max(word_pos_tags[key], key=word_pos_tags[key].get)
-        word_counts_sorted = sorted(word_counts.items(), key=operator.itemgetter(1))
-
-
 
     observationSpace = set(word_pos_tags.keys())
     stateSpace = set(pos_counts.keys())
 
-    #print("Total observation Space "+len(observationSpace).__str__())
-    #print("Total state space "+len(stateSpace).__str__())
 
 def splitFiles(trainingInputContentToSplit):
     if not (os.path.isfile(testFile) and os.path.isfile(testExpectedFile) and os.path.isfile(trainingFile)):
-        train, test = train_test_split(trainingInputContentToSplit, test_size=0.2)
+        train, test = train_test_split(trainingInputContentToSplit, test_size=0.1)
         trainingfileObj = open(trainingFile, 'w')
         testExpectedFileObj = open(testExpectedFile,'w')
         testfileObj = open(testFile, 'w')
@@ -188,9 +180,7 @@ def generateEmmisionCounts(observationSpace, stateSpace):
         for j in observationSpace:
             (emmisionBigramTransitionCounts[i])[j] = 0
 
-    #emmisionList = zip(wordOrderList, posOrderList)
     emmisionList = zip(posOrderList, wordOrderList)
-    print(emmisionList)
 
     for each in emmisionList:
         if each[0] in emmisionBigramTransitionCounts:
@@ -230,7 +220,6 @@ def generateStartProbabilities():
         prob = start_count[pos]/totalStarts
         start_p[pos] = prob
 
-
 def viterbi(obs, states, start_p, trans_p, emit_p):
     V = [{}]
     for st in states:
@@ -246,7 +235,8 @@ def viterbi(obs, states, start_p, trans_p, emit_p):
                     V[t][st] = {"prob": max_prob, "prev": prev_st}
                     break
     for line in dptable(V):
-        print(line)
+        pass
+        #print(line)
     opt = []
     # The highest probability
     max_prob = max(value["prob"] for value in V[-1].values())
@@ -262,8 +252,8 @@ def viterbi(obs, states, start_p, trans_p, emit_p):
         opt.insert(0, V[t + 1][previous]["prev"])
         previous = V[t + 1][previous]["prev"]
 
+    return opt
     print('The steps of states are ' + ' '.join(opt) + ' with highest probability of %s' % max_prob)
-
 
 def dptable(V):
     # Print a table of steps from dictionary
@@ -271,23 +261,61 @@ def dptable(V):
     for state in V[0]:
         yield "%.7s: " % state + " ".join("%.7s" % ("%f" % v[state]["prob"]) for v in V)
 
+def buildTestObservationInOrder(content):
+    testObservation = list()
+    for line in content:
+        column = line.split()
+        if column:
+            testObservation.append(column[1])
+    return testObservation
+
+def writeOutputFile(testFile, outputFile, opt):
+    testFileObj = open(testFile, 'r')
+    outputFileObj  = open(outputFile, 'w')
+    for line in testFileObj.readlines():
+        column = line.split()
+        if column:
+            sl = column[0]
+            word = column[1]
+            pos = opt.pop(0)
+            writeline = sl+'\t'+word+'\t'+pos+'\n'
+            outputFileObj.write(writeline)
+        else:
+            outputFileObj.write('\n')
+    outputFileObj.close()
+
+def addKSmoothing(discount):
+    for state1 in stateBigramTransitionCounts:
+        for state2 in stateBigramTransitionCounts[state1]:
+            stateBigramTransitionCounts[state1][state2] += discount
+    #print(stateBigramTransitionCounts)
+
+def handleUnknowns(trainingContent, testContent):
+    for column in testFile:
+        pass
+
+
 
 if __name__ == "__main__":
     trainingInputContent = open(InputFileName, 'r').readlines()
 
     # Each sentence is put into one single line as we will split data randomly
     sentenceArray = arrangeSentencesInEachLine(trainingInputContent)
-    dir_path = os.path.dirname(os.path.realpath(__file__))
 
     # Split files into training and test
     #splitFiles(sentenceArray)
     trainingContent = open(trainingFile, 'r').readlines()
     testContent = open(testFile, 'r').readlines()
 
-    buildBaseLine(trainingInputContent)
+    buildBaseLine(trainingContent)
+
+    handleUnknowns(testContent, trainingContent)
 
     stateBigrams = buildBigrams(posOrderList)
     generateBigramTransitionCounts(stateBigrams,stateSpace)
+
+    discount = 0.75
+    addKSmoothing(discount)
 
     generateTransitionProbablilities(stateBigramTransitionCounts, stateSpace)
     correct = checkProbabilities(transitional_p)
@@ -298,7 +326,12 @@ if __name__ == "__main__":
 
     generateStartProbabilities()
 
-    viterbi(['start', 'over', '.'], list(stateSpace), start_p, transitional_p, emmision_p)
+    testObservationInOrder = buildTestObservationInOrder(testContent)
+
+    opt = viterbi(testObservationInOrder, list(stateSpace), start_p, transitional_p, emmision_p)
+
+    outputFileName = 'shambumuralidhar-manish-assgn2-test-output.txt'
+    writeOutputFile(testFile, outputFileName, opt)
 
 
 
