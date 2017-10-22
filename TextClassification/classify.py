@@ -33,7 +33,7 @@ def trainNaiveBayes(class1docs, class2docs):
     loglikelihood = {'POS': {}, 'NEG': {}}
     N = dict()
     N[classLabels[0]] = class1docs.__len__()
-    N[classLabels[1]] = class2docs.__len__();
+    N[classLabels[1]] = class2docs.__len__()
 
     totaldocs = N[classLabels[0]] + N[classLabels[1]]
     logprior[classLabels[0]] = math.log(N[classLabels[0]]/totaldocs)
@@ -69,7 +69,7 @@ def classifyTestSentiment(testContent, loglikelihood, logprior, vocabulary):
     for eachLine in testContent:
         bestClass = testNaiveBayes(eachLine.split()[1:], loglikelihood, logprior, vocabulary)
         outputList.append(eachLine.split()[0] +"\t"+ bestClass)
-    writeFile(outputList, "output.txt")
+    writeFile(outputList, "output.txt", '\n')
 
 
 def testNaiveBayes(testSentence, loglikelihood, logprior, vocabulary):
@@ -83,9 +83,9 @@ def testNaiveBayes(testSentence, loglikelihood, logprior, vocabulary):
 
     return max(totalSum.__iter__(), key=lambda k: totalSum[k] )
 
-def writeFile(content, fileName):
+def writeFile(content, fileName, separator):
     fObj = open(fileName, 'w')
-    fObj.write("\n".join(content))
+    fObj.write(separator.join(content))
 
 
 if __name__ == "__main__":
@@ -98,9 +98,9 @@ if __name__ == "__main__":
     testSentences = sentenceArrayPositiveTest + sentenceArrayNegativeTest
     shuffle(testSentences)
 
-    writeFile(sentenceArrayPositiveDev, "PosDevData.txt")
-    writeFile(sentenceArrayNegativeDev, "NegDevData.txt")
-    writeFile(testSentences, "TestData.txt")
+    writeFile(sentenceArrayPositiveDev, "PosDevData.txt", "")
+    writeFile(sentenceArrayNegativeDev, "NegDevData.txt", "")
+    writeFile(testSentences, "TestData.txt", "")
 
     logprior, loglikelihood, vocabulary = trainNaiveBayes(sentenceArrayPositiveDev, sentenceArrayNegativeDev)
     classifyTestSentiment(testSentences, loglikelihood, logprior,vocabulary)
